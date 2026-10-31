@@ -3,7 +3,11 @@
 // Direct loads, microcode reads, RMW and direct stores through the L1 probe port and sidecar TLB
 //
 `include "z486_platform.svh"
+// IEEE 1800 gives `input logic` ports the default net type, so GowinSynthesis
+// rejects them under `none`; the other flows accept this lint guard.
+`ifndef Z486_GOWIN
 `default_nettype none
+`endif
 module data_access
     import z486_pkg::*;
 (

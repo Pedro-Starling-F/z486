@@ -1,10 +1,11 @@
 # z486 board demos
 
-These minimal designs show how to deploy the `z486` CPU on Altera DE10-Nano
-and Xilinx KV260. Both boards run the same 16-bit x86 firmware from
+These minimal designs show how to deploy the `z486` CPU on Altera DE10-Nano,
+Xilinx KV260, and the Sipeed Tang Mega 138K Pro (Gowin GW5AST-138). All boards
+run the same 16-bit x86 firmware from
 `firmware/blink.asm`. The firmware writes `55`, `aa`, `55`, ... to I/O port
-`0x80`, driving the onboard LEDs of the DE10-Nano or a PMOD LED module on the
-KV260.
+`0x80`, driving the onboard LEDs of the DE10-Nano or Tang Mega 138K Pro, or a
+PMOD LED module on the KV260.
 
 ## Prerequisites
 
@@ -17,6 +18,9 @@ KV260.
 - Quartus Prime Lite 17.0 with Cyclone V support for `make de10nano`. Override
   its installation directory with `QUARTUS_ROOTDIR=/path/to/quartus` when
   needed.
+
+- Gowin EDA 1.9.12.03 with GW5AST support for `make tang138k`. Override the
+  Tcl shell with `GW_SH=/path/to/gw_sh` when it is not on `PATH`.
 
 The reference builds were verified with Verilator 5.044, Vivado 2024.2.2, and
 Quartus Prime Lite 17.0.2.
@@ -88,6 +92,18 @@ xmutil unloadapp
 xmutil loadapp z486-led
 ```
 
+## Tang Mega 138K Pro
+
+The Tang demo drives the six dock LEDs from the low six bits of port `0x80`.
+A PLL runs the CPU at 20 MHz from the 50 MHz board oscillator.
+
+```bash
+make tang138k GW_SH=/d/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe
+```
+
+Then use Gowin Programmer to program
+`tang138k/build/impl/pnr/z486_tang138k.fs` to the board.
+
 ## CPU area and timing
 
 These are post-fit/post-route results for the CPU hierarchy inside each
@@ -98,6 +114,7 @@ caches enabled:
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | DE10-Nano | CPU + x87 | 57.95 MHz Fmax | 24,411.3 ALMs | 15,696 | 92 M10Ks | 12 |
 | KV260 | CPU + x87 | 100 MHz, +0.441 ns setup slack | 41,290 LUTs | 13,036 | 20 RAMB36 + 11 RAMB18 | 19 |
+| Tang Mega 138K Pro | Complete demo | 20 MHz, 22.2 MHz Fmax | 56,639 LUT/ALU | 13,080 | 150 BSRAM | 19.5 |
 
 The DE10-Nano line comes from `make de10nano-fmax`, which uses an 85 MHz PLL
 and the `z486_MiSTer` production optimization profile to drive the fitter. The
@@ -107,9 +124,13 @@ KV260 LED design uses 41,322 LUTs, 13,074 registers, 36 RAMB36 plus 11 RAMB18,
 and 19 DSPs; 16 of those RAMB36 blocks hold the 64 KiB demonstration firmware
 rather than CPU state.
 
+The Tang line is the complete LED design from `make tang138k`, including
+the 32 BSRAM blocks of demonstration firmware.
+
 ## Portability selection
 
 The KV260 build defines `Z486_XILINX`; the DE10-Nano build defines
-`Z486_ALTERA`. A generic simulation defines neither. `z486_platform.svh`
+`Z486_ALTERA`; the Tang build defines `Z486_GOWIN` through
+`tang138k/rtl/tang138k_defines.sv`, because `gw_sh` has no macro option. A generic simulation defines neither. `z486_platform.svh`
 normalizes those selections and the legacy MiSTer macros into feature-specific
 memory, ALU, and synthesis-attribute choices.

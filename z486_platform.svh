@@ -36,6 +36,15 @@
 `define Z486_USE_ALTERA_MEMORY
 `endif
 
+// Xilinx and Gowin infer the dense x87 control store from its memory image.
+`ifdef Z486_XILINX
+`define Z486_USE_INFERRED_X87_UCODE_ROM
+`endif
+
+`ifdef Z486_GOWIN
+`define Z486_USE_INFERRED_X87_UCODE_ROM
+`endif
+
 // Synthesis intent. These macros must never change a visible cycle contract.
 `ifdef Z486_XILINX
 `define Z486_BLOCK_RAM             (* ram_style = "block" *)
@@ -44,6 +53,14 @@
 `define Z486_KEEP                  (* keep = "true" *)
 `define Z486_NO_PRUNE              (* dont_touch = "true" *)
 `define Z486_REPLICATE             (* max_fanout = 32 *)
+`elsif Z486_GOWIN
+`define Z486_BLOCK_RAM             (* syn_ramstyle = "block_ram" *)
+`define Z486_BLOCK_RAM_NO_RW_CHECK (* syn_ramstyle = "block_ram" *)
+// GW5A has no LUT RAM; let GowinSynthesis choose registers or BSRAM.
+`define Z486_DISTRIBUTED_RAM
+`define Z486_KEEP                  (* syn_keep = 1 *)
+`define Z486_NO_PRUNE              (* syn_preserve = 1 *)
+`define Z486_REPLICATE             (* syn_maxfan = 32 *)
 `elsif Z486_ALTERA
 `define Z486_BLOCK_RAM             (* ramstyle = "M10K" *)
 `define Z486_BLOCK_RAM_NO_RW_CHECK (* ramstyle = "M10K, no_rw_check" *)

@@ -14,7 +14,7 @@ module x87_ucode_rom
 logic [63:0] raw_uop;
 assign uop = x87_uop_t'(raw_uop);
 
-`ifdef Z486_XILINX
+`ifdef Z486_USE_INFERRED_X87_UCODE_ROM
 
 // Keep the dense image in block RAM. Vivado otherwise recognizes the sparse
 // case function below as logic and implements this 16 Kibit control store in
